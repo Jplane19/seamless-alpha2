@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { useSupabase } from '@/contexts/SupabaseContext'
 
 export default function Login() {
   const router = useRouter()
+  const { supabase } = useSupabase()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)

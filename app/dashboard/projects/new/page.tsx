@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { useSupabase } from '@/contexts/SupabaseContext'
+import { useProjects } from '@/hooks/useProjects'
+import { ProjectStatus } from '@/types'
 
-// In a real app, you'd fetch these from your database
-const STATUS_OPTIONS = [
+// Status options from our types
+const STATUS_OPTIONS: ProjectStatus[] = [
   'Planning',
   'Permitting',
   'Demo',
@@ -22,14 +24,18 @@ const STATUS_OPTIONS = [
   'Complete'
 ]
 
-// Mock client list - in a real app, you'd fetch these from your database
-const CLIENTS = [
-  { id: '1', name: 'John Smith', email: 'john@example.com' },
-  { id: '2', name: 'Jane Doe', email: 'jane@example.com' }
-]
+type Client = {
+  id: string
+  email: string
+  role: string
+}
 
 export default function NewProject() {
   const router = useRouter()
+  const { supabase } = useSupabase()
+  const { addProject } = useProjects()
+  const [clients, setClients] = useState<Client[]>([])
+  const [loadingClients, setLoadingClients] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -37,11 +43,37 @@ export default function NewProject() {
     name: '',
     address: '',
     clientId: '',
-    status: 'Planning',
+    status: 'Planning' as ProjectStatus,
     startDate: '',
     endDate: '',
     initialUpdate: ''
   })
+
+  // Fetch clients with the client role
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setLoadingClients(true)
+        // In a real app, you'd fetch clients from profiles table where role = 'client'
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('role', 'client')
+          
+        if (error) {
+          throw error
+        }
+        
+        setClients(data as Client[])
+      } catch (error) {
+        console.error('Error fetching clients:', error)
+      } finally {
+        setLoadingClients(false)
+      }
+    }
+    
+    fetchClients()
+  }, [supabase])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -57,26 +89,16 @@ export default function NewProject() {
     setError(null)
     
     try {
-      // In a real app, you'd submit this to your Supabase database
-      // const { data, error } = await supabase
-      //   .from('projects')
-      //   .insert([
-      //     {
-      //       name: formData.name,
-      //       address: formData.address,
-      //       client_id: formData.clientId,
-      //       status: formData.status,
-      //       start_date: formData.startDate,
-      //       end_date: formData.endDate,
-      //       last_update: formData.initialUpdate,
-      //       last_update_date: new Date().toISOString().split('T')[0]
-      //     }
-      //   ])
-      
-      // if (error) throw error
-      
-      // For demonstration, we'll just wait a second
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await addProject({
+        name: formData.name,
+        address: formData.address,
+        client_id: formData.clientId,
+        status: formData.status,
+        start_date: formData.startDate,
+        end_date: formData.endDate,
+        last_update: formData.initialUpdate,
+        last_update_date: new Date().toISOString().split('T')[0]
+      })
       
       // Navigate back to the projects list
       router.push('/dashboard/projects')
@@ -146,9 +168,13 @@ export default function NewProject() {
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select a client</option>
-                {CLIENTS.map(client => (
+                {loadingClients ? (
+                  <option value="">Loading clients...</option>
+                ) : clients.length === 0 ? (
+                  <option value="">No clients available</option>
+                ) : clients.map(client => (
                   <option key={client.id} value={client.id}>
-                    {client.name} ({client.email})
+                    {client.email}
                   </option>
                 ))}
               </select>

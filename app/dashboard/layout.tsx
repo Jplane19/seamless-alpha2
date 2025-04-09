@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { useSupabase } from '@/contexts/SupabaseContext'
 
 export default function DashboardLayout({
   children,
@@ -11,27 +10,10 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-      
-      setUser(user)
-      setLoading(false)
-    }
-    
-    checkUser()
-  }, [router])
+  const { user, loading, signOut } = useSupabase()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    await signOut()
     router.push('/auth/login')
   }
 
