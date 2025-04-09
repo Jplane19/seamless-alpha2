@@ -1,24 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Seamless Alpha
+
+A project management web application for DeHyl Construction built with Next.js and Supabase.
+
+## Project Overview
+
+Seamless Alpha provides DeHyl Construction's coordinators and key remote clients with a single, reliable source of truth for active project status and essential information. The application eliminates communication friction caused by dispersed updates and provides clients with clear, timely visibility into their projects.
+
+### Key Features (MVP - V1)
+
+- Secure login for Coordinators and designated Clients
+- Client Dashboard with high-level overview of active projects
+- Coordinator Dashboard for project management and updates
+- Basic project setup and management
+- Role-based access control (Coordinator, Client)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- npm or yarn
+- Supabase account (for authentication and database)
+
+### Setup
+
+1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd seamless-alpha2
+```
+
+2. Install dependencies
+
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Set up environment variables
+
+Create a `.env.local` file in the root directory with your Supabase credentials:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+4. Run the development server
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Supabase Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a new Supabase project
+2. Enable Email/Password authentication
+3. Create the necessary database tables (see Database Schema below)
+4. Copy your Supabase URL and anon key to the `.env.local` file
+
+### Database Schema
+
+The application requires the following tables in your Supabase database:
+
+#### Users
+
+Authentication is handled by Supabase Auth.
+
+#### Projects
+
+- id: uuid (primary key)
+- name: text
+- address: text
+- client_id: uuid (foreign key to auth.users)
+- status: text
+- start_date: date
+- end_date: date
+- last_update: text
+- last_update_date: date
+- created_at: timestamp
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font).
 
 ## Learn More
 
