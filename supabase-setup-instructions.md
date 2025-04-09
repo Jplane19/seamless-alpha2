@@ -8,13 +8,33 @@ Follow these steps to set up your Supabase database for Seamless Alpha:
 2. Navigate to your project: `seamless-alpha2`
 3. Click on the "SQL Editor" tab in the left sidebar
 
-## 2. Execute Schema Creation Script
+## 2. Execute Schema Creation Scripts
 
-1. Create a new query
-2. Copy and paste the entire contents of the `database-schema.sql` file into the editor
-3. Execute the query by clicking the "Run" button
+Execute the following SQL scripts in order:
 
-This will create all the necessary tables, indexes, RLS policies, and functions for your application.
+1. **Clean Start** (00-clean-start.sql)
+   - This will drop any existing tables to give you a clean starting point
+
+2. **Profile Setup** (01-profiles.sql)
+   - Sets up the profiles table and auth trigger
+
+3. **Tables** (02-tables.sql)
+   - Creates all the main tables for the application
+
+4. **RLS Policies** (03-rls.sql)
+   - Adds Row Level Security policies for data protection
+
+5. **Indexes** (04-indexes.sql)
+   - Adds performance optimizing indexes
+
+6. **Triggers** (05-triggers.sql)
+   - Adds automation triggers
+
+7. **Realtime** (06-realtime.sql)
+   - Enables realtime subscriptions
+
+8. **Seed Data** (07-seed-data.sql)
+   - Adds sample data for testing
 
 ## 3. Set Up Storage
 
@@ -30,7 +50,7 @@ This will create all the necessary tables, indexes, RLS policies, and functions 
    - Enable "Email" authentication
    - Configure password policies as desired
    - Set up any additional providers you may need
-   
+
 ## 5. Create Admin User
 
 1. Navigate to the "Authentication" tab
@@ -41,36 +61,37 @@ This will create all the necessary tables, indexes, RLS policies, and functions 
 6. Go back to the SQL Editor and run:
 
 ```sql
-INSERT INTO profiles (id, email, full_name, role)
-VALUES ('[USER-UUID]', '[YOUR-EMAIL]', 'Admin User', 'admin');
+UPDATE profiles 
+SET role = 'admin'
+WHERE id = '[USER-UUID]';
 ```
 
-## 6. Enable Realtime
+## 6. Verify Setup
 
-1. Navigate to the "Database" tab
-2. Click "Replication" in the sub-menu
-3. Enable "Realtime" for the following tables:
-   - projects
-   - project_status_history
-   - comments
-   - project_phases
-
-## 7. Configure Client Environment
-
-1. Verify your environment variables in `.env.local` match your Supabase project
-2. The environment variables should be:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=https://eqlflgqqudsbeffkpvao.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxbGZsZ3FxdWRzYmVmZmtwdmFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQwNzI2NzMsImV4cCI6MjA1OTY0ODY3M30.dyl2-6teq9Kcn-_mXaxPvEK5KA9eOImvPpHDxGXmyco
-```
-
-## 8. Test the Connection
-
-After setting up your database, run your local Next.js development server:
+Run the connection check script to verify your setup:
 
 ```bash
-npm run dev
+node scripts/check-connection.js
 ```
 
-Your Seamless Alpha application should now be able to connect to your Supabase project and utilize all the database features.
+This should return information about your client companies and confirm the connection is working properly.
+
+## 7. Common Troubleshooting
+
+If you encounter errors during setup:
+
+- **"relation does not exist" errors**: Make sure you're running the scripts in the correct order
+- **Foreign key constraint violations**: The clean-start script should handle this, but if not, check for existing data
+- **RLS policy errors**: Make sure the tables exist before applying RLS policies
+- **Auth trigger errors**: These can happen if the auth trigger already exists
+
+If you need to start over, run the 00-clean-start.sql script again and begin the process from step 2.
+
+## 8. Testing Login
+
+After setting up the database and creating a user, you can test the login:
+
+1. Start your local Next.js server: `npm run dev`
+2. Navigate to http://localhost:3000
+3. Log in with the user you created
+4. If everything is set up correctly, you should be redirected to the dashboard
